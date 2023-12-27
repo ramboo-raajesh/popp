@@ -13,6 +13,11 @@ def on_mouse_wheel(event):
 # Load your image
 image = cv2.imread(image_path)
 
+# Check if the image is loaded successfully
+if image is None:
+    print(f"Error: Unable to load image from '{image_path}'")
+    exit()
+
 # Create a Tkinter window
 root = tk.Tk()
 root.title("Movable Image Window")

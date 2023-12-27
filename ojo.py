@@ -1,40 +1,37 @@
 import cv2
+import tkinter as tk
+from PIL import Image, ImageTk
 
-# Global variables to store window position
-window_position = (0, 0)
+# Global variable to store image path
+image_path = 'your_image_path.jpg'  # Replace with the actual path to your image
 
-# Callback function for mouse events
-def move_window(event, x, y, flags, param):
-    global window_position
-
-    if event == cv2.EVENT_MOUSEWHEEL:
-        # Get the mouse wheel delta (positive for scrolling up, negative for scrolling down)
-        delta = flags
-
-        # Update the window position based on the mouse wheel delta
-        window_position = (window_position[0], window_position[1] + delta)
-
-        # Move the window to the updated position
-        cv2.moveWindow('Image', window_position[0], window_position[1])
+# Callback function for mouse wheel events
+def on_mouse_wheel(event):
+    delta = -1 if event.delta < 0 else 1  # Determine scrolling direction
+    canvas.yview_scroll(delta, "units")  # Scroll the canvas
 
 # Load your image
-image = cv2.imread('your_image_path.jpg')  # Replace 'your_image_path.jpg' with the actual path to your image
+image = cv2.imread(image_path)
 
-# Set an initial window size and position
-initial_width, initial_height = 800, 600
-window_position = (0, 0)
+# Create a Tkinter window
+root = tk.Tk()
+root.title("Movable Image Window")
 
-# Create a non-resizable window
-cv2.namedWindow('Image', cv2.WINDOW_NORMAL)
-cv2.resizeWindow('Image', initial_width, initial_height)
-cv2.moveWindow('Image', window_position[0], window_position[1])
+# Create a Canvas widget to display the image
+canvas = tk.Canvas(root, width=image.shape[1], height=image.shape[0], scrollregion=(0, 0, image.shape[1], image.shape[0]))
 
-# Set the mouse callback
-cv2.setMouseCallback('Image', move_window)
+# Bind the mouse wheel event to the canvas
+canvas.bind("<MouseWheel>", on_mouse_wheel)
 
-# Display the image
-cv2.imshow('Image', image)
+# Create a PhotoImage object from the OpenCV image
+image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+photo = ImageTk.PhotoImage(Image.fromarray(image_rgb))
 
-# Wait for a key press to exit
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# Display the image on the canvas
+canvas.create_image(0, 0, anchor=tk.NW, image=photo)
+
+# Pack the canvas into the window
+canvas.pack(fill=tk.BOTH, expand=True)
+
+# Run the Tkinter event loop
+root.mainloop()

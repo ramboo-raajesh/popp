@@ -1,29 +1,43 @@
+import numpy as np
 import cv2
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC  # Consider other classifiers if needed
 
-# Load your image
-image = cv2.imread('your_image_path.jpg')  # Replace 'your_image_path.jpg' with the actual path to your image
+#Load and Preprocess Images:
+def load_and_preprocess_images(image_paths):
+    images = []
+    for image_path in image_paths:
+        # Load image in grayscale
+        img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        # Resize images to a consistent size (if needed)
+        img = cv2.resize(img, (32, 32))  # Reshape for consistency
+        # Flatten image into a feature vector
+        features = img.flatten()
+        images.append(features)
+    return np.array(images)
+  
+#Load Data and Create Labels:
+# Assuming you have image paths in two lists: plain_images and crossed_images
+plain_features = load_and_preprocess_images(plain_images)
+crossed_features = load_and_preprocess_images(crossed_images)
+labels = np.array([0] * len(plain_images) + [1] * len(crossed_images))  # 0 for plain, 1 for crossed
 
-# Get screen width and height
-screen_width, screen_height = 1366, 768  # Update with your screen resolution
+#Split Data into Training and Testing Sets:
+X_train, X_test, y_train, y_test = train_test_split(
+    np.concatenate((plain_features, crossed_features)), labels, test_size=0.25
+)
 
-# Ensure the window fits within the screen dimensions
-cv2.namedWindow('Image', cv2.WINDOW_NORMAL)
-cv2.resizeWindow('Image', min(screen_width, image.shape[1]), min(screen_height, image.shape[0]))
+#Train a Machine Learning Model:
+model = SVC()  # You can experiment with different classifiers
+model.fit(X_train, y_train)
 
-# Display the image
-cv2.imshow('Image', image)
-cv2.waitKey(0)
+#Test the Model on New Images:
+def predict_image(image_path):
+    features = load_and_preprocess_images([image_path])[0]  # Preprocess single image
+    prediction = model.predict(features)
+    return "Plain" if prediction == 0 else "Crossed"
 
-# Use the cv2.selectROI function to interactively select a region
-roi = cv2.selectROI('Select ROI', image, fromCenter=False, showCrosshair=True)
-
-# Print the row and column values of the selected region
-print(f"Selected ROI: Rows [{int(roi[1])}:{int(roi[1] + roi[3])}], Columns [{int(roi[0])}:{int(roi[0] + roi[2])}]")
-
-# Draw a rectangle around the selected region
-cv2.rectangle(image, (int(roi[0]), int(roi[1])), (int(roi[0] + roi[2]), int(roi[1] + roi[3])), (0, 255, 0), 2)
-
-# Display the image with the rectangle
-cv2.imshow('Selected Region', image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+#Use the Model for Prediction:
+new_image_path = "path/to/new/image.jpg"
+prediction = predict_image(new_image_path)
+print(prediction)  # Print "Plain" or "Crossed"

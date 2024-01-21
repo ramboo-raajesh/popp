@@ -41,3 +41,16 @@ def predict_image(image_path):
 new_image_path = "path/to/new/image.jpg"
 prediction = predict_image(new_image_path)
 print(prediction)  # Print "Plain" or "Crossed"
+
+#To save the model:
+from sklearn.externals import joblib
+# After training your model (assuming it's named 'model')
+model_file = "path/to/save/model.h5"  # Specify file path
+joblib.dump(model, model_file)  # Save the model to the HDF5 file
+
+#To Load the model:
+from sklearn.externals import joblib
+# When you need to use the model later
+loaded_model = joblib.load(model_file)  # Load the model from the HDF5 file
+# Use the loaded model for predictions
+prediction = loaded_model.predict(new_data)  # Example usage

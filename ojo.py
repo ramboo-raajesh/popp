@@ -31,6 +31,12 @@ X_train, X_test, y_train, y_test = train_test_split(
 model = SVC()  # You can experiment with different classifiers
 model.fit(X_train, y_train)
 
+#To save the model:
+from sklearn.externals import joblib
+# After training your model (assuming it's named 'model')
+model_file = "path/to/save/model.h5"  # Specify file path
+joblib.dump(model, model_file)  # Save the model to the HDF5 file
+
 #Test the Model on New Images:
 def predict_image(image_path):
     features = load_and_preprocess_images([image_path])[0]  # Preprocess single image
@@ -41,12 +47,6 @@ def predict_image(image_path):
 new_image_path = "path/to/new/image.jpg"
 prediction = predict_image(new_image_path)
 print(prediction)  # Print "Plain" or "Crossed"
-
-#To save the model:
-from sklearn.externals import joblib
-# After training your model (assuming it's named 'model')
-model_file = "path/to/save/model.h5"  # Specify file path
-joblib.dump(model, model_file)  # Save the model to the HDF5 file
 
 #To Load the model:
 from sklearn.externals import joblib

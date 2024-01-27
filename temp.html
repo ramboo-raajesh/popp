@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Interactive Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, purple, white);
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200vh;
+    }
+    #associate-dropdown {
+      margin: 10px;
+      padding: 5px;
+      border: none;
+      border-radius: 4px;
+      background: linear-gradient(to bottom right, white, purple); /* White-purple gradient */
+      color: black;
+      box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Mild shadow */
+    }
+    .chart-container {
+      display: flex;
+    }
+    .chart {
+      flex: 1;
+      margin: 10px;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2); /* Mild shadow */
+    }
+    #pie-chart {
+      width: 500px;
+      height: 300px;
+      margin: 10px auto;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2); /* Mild shadow */
+    }
+  </style>
+</head>
+<body>
+  <marquee><h1 style="color: white;">Associate Contributions Dashboard</h1></marquee>
+
+  <select id="associate-dropdown">
+    <option value="all">All Associates</option>
+    <option value="Alice">Alice</option>
+    <option value="Bob">Bob</option>
+    <option value="Charlie">Charlie</option>
+    <option value="Diana">Diana</option>
+    <option value="Emma">Emma</option>
+    <option value="Frank">Frank</option>
+    <option value="George">George</option>
+    <option value="Helen">Helen</option>
+    <option value="Irene">Irene</option>
+  </select>
+
+  <div class="chart-container">
+    <div class="chart" id="bar-chart"></div>
+    <div class="chart" id="line-chart"></div>
+  </div>
+
+  <div id="pie-chart"></div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    // Sample data
+    const data = [
+      { name: "Alice", Job1: 120, Job2: 80, Job3: 100 },
+      { name: "Bob", Job1: 100, Job2: 90, Job3: 80 },
+      { name: "Charlie", Job1: 90, Job2: 85, Job3: 75 },
+      { name: "Diana", Job1: 80, Job2: 75, Job3: 70 },
+      { name: "Emma", Job1: 70, Job2: 65, Job3: 60 },
+      { name: "Frank", Job1: 60, Job2: 55, Job3: 50 },
+      { name: "George", Job1: 50, Job2: 45, Job3: 40 },
+      { name: "Helen", Job1: 40, Job2: 35, Job3: 30 },
+      { name: "Irene", Job1: 30, Job2: 25, Job3: 20 },
+      { name: "James", Job1: 20, Job2: 15, Job3: 10 }
+    ];
+
+    // Create and populate dropdown list
+    const dropdown = document.getElementById("associate-dropdown");
+    for (const item of data) {
+      const option = document.createElement("option");
+      option.value = item.name;
+      option.textContent = item.name;
+      dropdown.appendChild(option);
+    }
+
+    // Function to create bar chart
+    function createBarChart(data) {
+      // Remove existing SVG element
+      d3.select("#bar-chart").selectAll("svg").remove();
+
+      // Set up dimensions
+      const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+      const width = 300 - margin.left - margin.right;
+      const height = 300 - margin.top - margin.bottom;
+
+      // Create SVG element
+      const svg = d3.select("#bar-chart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Create scales
+      const x = d3.scaleBand()
+        .domain(data.map(d => d.name))
+        .range([0, width])
+        .padding(0.1);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.Job1)])
+        .range([height, 0]);
+
+      // Create x-axis
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+      // Create y-axis
+      svg.append("g")
+        .call(d3.axisLeft(y));
+
+      // Create unique colors for each associate
+      const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+      // Create bars with tooltips
+      svg.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", d => x(d.name))
+        .attr("width", x.bandwidth())
+        .attr("y", d => y(d.Job1))
+        .attr("height", d => height - y(d.Job1))
+        .attr("fill", (d, i) => colorScale(i)) // Unique color for each associate
+        .attr("title", d => `${d.name}: ${d.Job1}`)
+        .on("mouseover", handleMouseOver)
+        .on("mouseout", handleMouseOut);
+
+      // Add tooltips
+      d3.selectAll(".bar").append("title")
+        .text(d => `${d.name}: ${d.Job1}`);
+    }
+
+    // Function to create line chart
+    function createLineChart(data) {
+      // Remove existing SVG element
+      d3.select("#line-chart").selectAll("svg").remove();
+
+      // Set up dimensions
+      const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+      const width = 300 - margin.left - margin.right;
+      const height = 300 - margin.top - margin.bottom;
+
+      // Create SVG element
+      const svg = d3.select("#line-chart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Create scales
+      const x = d3.scaleBand()
+        .domain(data.map(d => d.name))
+        .range([0, width])
+        .padding(0.1);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.Job2)])
+        .range([height, 0]);
+
+      // Create x-axis
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+      // Create y-axis
+      svg.append("g")
+        .call(d3.axisLeft(y));
+
+      // Create line with tooltips
+      svg.append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 2)
+        .attr("d", d3.line()
+          .x(d => x(d.name) + x.bandwidth() / 2)
+          .y(d => y(d.Job2))
+        )
+        .attr("title", d => `${data[0].name} - ${data[data.length - 1].name}: ${data[data.length - 1].Job2}`)
+        .on("mouseover", handleMouseOver)
+        .on("mouseout", handleMouseOut);
+
+      // Add tooltips
+      d3.select("#line-chart path").append("title")
+        .text(d => `${data[0].name} - ${data[data.length - 1].name}: ${data[data.length - 1].Job2}`);
+    }
+
+    // Function to create pie chart
+    function createPieChart(data) {
+      // Remove existing SVG element
+      d3.select("#pie-chart").selectAll("svg").remove();
+
+      // Set up dimensions
+      const width = 500;
+      const height = 300;
+      const radius = Math.min(width, height) / 2;
+
+      // Create SVG element
+      const svg = d3.select("#pie-chart")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+      // Create pie chart data
+      const pie = d3.pie().value(d => d.Job1 + d.Job2 + d.Job3);
+      const arc = d3.arc().innerRadius(0).outerRadius(radius);
+
+      // Create pie slices with tooltips
+      const slices = svg.selectAll("slice")
+        .data(pie(data))
+        .enter().append("g");
+
+      slices.append("path")
+        .attr("d", arc)
+        .attr("fill", (d, i) => d3.schemeCategory10[i])
+        .attr("title", d => `${d.data.name}: ${(d.endAngle - d.startAngle) / (2 * Math.PI) * 100}%`)
+        .on("mouseover", handleMouseOver)
+        .on("mouseout", handleMouseOut);
+
+      // Add labels
+      slices.append("text")
+        .attr("transform", d => "translate(" + arc.centroid(d) + ")")
+        .text(d => d.data.name)
+        .style("text-anchor", "middle");
+    }
+
+    // Hover effects
+    function handleMouseOver(d, i, elements) {
+      d3.select(elements[i])
+        .attr("opacity", 0.7)
+        .style("filter", "brightness(1.5) drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3))") /* Enhanced shadow */
+        .style("cursor", "pointer");
+    }
+
+    function handleMouseOut(d, i, elements) {
+      d3.select(elements[i])
+        .attr("opacity", 1)
+        .style("filter", "brightness(1)")
+        .style("cursor", "default");
+    }
+
+    // Update charts on dropdown change
+    dropdown.addEventListener('change', function() {
+      const selectedName = this.value;
+      let filteredData;
+      if (selectedName === "all") {
+        filteredData = data;
+      } else {
+        filteredData = data.filter(d => d.name === selectedName);
+      }
+      createBarChart(filteredData);
+      createLineChart(filteredData);
+      createPieChart(filteredData);
+    });
+
+    // Initial rendering with all data
+    createBarChart(data);
+    createLineChart(data);
+    createPieChart(data);
+  </script>
+</body>
+</html>

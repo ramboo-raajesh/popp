@@ -71,3 +71,21 @@ matches = re.findall(pattern, text, flags=re.MULTILINE | re.DOTALL)
 
 for match in matches:
     print(match.strip())
+
+
+import csv
+
+text = """Hi This the first line of 1st para
+Hi This the second line of 1st para
+
+Hi This the first line of 2nd para
+Hi This the second line of 2nd para"""
+
+paragraphs = text.strip().split("\n\n")
+
+with open("paragraphs.csv", "w", newline="") as csvfile:
+    writer = csv.writer(csvfile)
+    for paragraph in paragraphs:
+        writer.writerow([paragraph])
+
+print("CSV file created successfully!")

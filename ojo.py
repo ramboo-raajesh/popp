@@ -89,3 +89,6 @@ with open("paragraphs.csv", "w", newline="") as csvfile:
         writer.writerow([paragraph])
 
 print("CSV file created successfully!")
+
+
+r"\bThen\b[:\W]+(.*?)(?=\bScenario\b|$)

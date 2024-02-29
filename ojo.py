@@ -91,4 +91,4 @@ with open("paragraphs.csv", "w", newline="") as csvfile:
 print("CSV file created successfully!")
 
 
-r"\bThen\b[:\W]+(.*?)(?=\bScenario\b|$)
+r"\bThen\b[:\W]+(.*?)(?:\bAnd\b[:\W]+(.*?))?(?=\bScenario\b|$)"

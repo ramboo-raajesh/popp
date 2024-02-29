@@ -54,3 +54,20 @@ from sklearn.externals import joblib
 loaded_model = joblib.load(model_file)  # Load the model from the HDF5 file
 # Use the loaded model for predictions
 prediction = loaded_model.predict(new_data)  # Example usage
+
+
+
+
+import re
+
+text = """
+Scenario: validate give me
+Some text between Scenario and Given 
+Given: something happens here
+"""
+
+pattern = r"(\bScenario\b[:\W]+.*?\bGiven\b[:\W]+)"  # Modified pattern
+matches = re.findall(pattern, text, flags=re.MULTILINE | re.DOTALL)
+
+for match in matches:
+    print(match.strip())
